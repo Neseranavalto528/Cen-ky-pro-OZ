@@ -1,1 +1,277 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vyhledávač v Katalogu</title>
+    <style>
+        /* Moderní, elegantní a čistý vzhled */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .search-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        h1 {
+            color: #111827;
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        p.subtitle {
+            color: #6b7280;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        /* Vyhledávací sekce */
+        .search-group {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .search-box {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus {
+            border-color: #3b82f6;
+        }
+        .search-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .search-btn:hover {
+            background-color: #2563eb;
+        }
+        /* Výsledky */
+        .results-wrapper {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th, td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 15px;
+        }
+        th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        .artikl-code {
+            font-family: monospace;
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #374151;
+        }
+        .cena-text {
+            font-weight: 700;
+            color: #059669;
+        }
+        .info-msg {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px 20px;
+            font-size: 16px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    
+    <!-- Horní karta s vyhledáváním -->
+    <div class="search-card">
+        <h1>Interní Vyhledávač Produktů</h1>
+        <p class="subtitle">Zadejte název nebo číslo artiklu (klidně bez mezer) a stiskněte Hledat</p>
+        
+        <div class="search-group">
+            <input type="text" id="hledat" class="search-box" placeholder="Hledat číslo nebo název..." autofocus>
+            <button id="hledat-btn" class="search-btn">Hledat</button>
+        </div>
+    </div>
+
+    <!-- Tady se zobrazí buď tabulka, nebo textový stav -->
+    <div id="vystup-sekce">
+        <div class="info-msg" id="stav-text">Aplikace je připravena. Zadejte hledaný výraz výše.</div>
+    </div>
+
+</div>
+
+<script>
+    const SOUBOR_JSON = 'tableConvert.com_wur85z.json';
+    let vsechnaData = [];
+    let nacteno = false;
+
+    // Skryté načtení dat při startu
+    async function inicializujData() {
+        try {
+            const odpoved = await fetch(SOUBOR_JSON);
+            if (!odpoved.ok) throw new Error();
+            vsechnaData = await odpoved.json();
+            nacteno = true;
+            console.log("Data načtena do paměti.");
+        } catch (chyba) {
+            document.getElementById('stav-text').innerText = "Chyba: Nepodařilo se na pozadí načíst datový soubor.";
+            document.getElementById('stav-text').style.color = "#dc2626";
+        }
+    }
+
+    // Hlavní funkce pro vyhledávání
+    function provedVyhledavani() {
+        if (!nacteno) {
+            alert("Data se ještě načítají na pozadí, vteřinku strpení...");
+            return;
+        }
+
+        const hledanyText = document.getElementById('hledat').value.trim().toLowerCase();
+        // Vytvoříme si verzi hledaného textu, která nemá vůbec žádné mezery
+        const hledanyTextBezMezer = hledanyText.replace(/\s+/g, '');
+        
+        const vystupSekce = document.getElementById('vystup-sekce');
+
+        if (hledanyText === '') {
+            vystupSekce.innerHTML = '<div class="info-msg" id="stav-text">Do vyhledávacího pole jste nic nenapsal.</div>';
+            return;
+        }
+
+        // CHYTRÉ FILTROVÁNÍ: Ignorujeme mezery v artiklech
+        const vysledky = vsechnaData.filter(radek => {
+            const hodnoty = Object.values(radek);
+            
+            // Sloupec A (index 0) a Sloupec B (index 1) ošetříme proti mezerám
+            const artiklA_Cisty = hodnoty[0] !== undefined ? String(hodnoty[0]).toLowerCase().replace(/\s+/g, '') : '';
+            const artiklB_Cisty = hodnoty[1] !== undefined ? String(hodnoty[1]).toLowerCase().replace(/\s+/g, '') : '';
+            
+            // Ostatní sloupce (Cena, Název produktu...) prohledáme klasicky s mezerami
+            const ostatniSloupceText = hodnoty.slice(2).map(v => String(v).toLowerCase()).join(' ');
+
+            // Kontrola: Buď se text bez mezer shoduje s vyčištěným artiklem A nebo B, 
+            // nebo normální hledaný text sedí do názvu/ceny
+            return artiklA_Cisty.includes(hledanyTextBezMezer) || 
+                   artiklB_Cisty.includes(hledanyTextBezMezer) || 
+                   ostatniSloupceText.includes(hledanyText);
+        });
+
+        // Pokud nic nenajdeme
+        if (vysledky.length === 0) {
+            vystupSekce.innerHTML = '<div class="info-msg" id="stav-text">Nebyly nalezeny žádné produkty odpovídající výrazu: "<strong>' + vycestejText(hledanyText) + '</strong>"</div>';
+            return;
+        }
+
+        // Pokud najdeme, sestavíme tabulku (max 50 výsledků pro plynulost)
+        let tabulkaHTML = `
+            <div class="results-wrapper" style="display: block;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Artikl A</th>
+                            <th>Artikl B</th>
+                            <th>Jedn.</th>
+                            <th>Cena</th>
+                            <th>Název produktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        const limitVysledku = vysledky.slice(0, 50);
+        
+        limitVysledku.forEach(radek => {
+            const hodnoty = Object.values(radek);
+            
+            const artiklA = hodnoty[0] !== undefined ? hodnoty[0] : '';
+            const artiklB = hodnoty[1] !== undefined ? hodnoty[1] : '';
+            const cenovaJednotka = hodnoty[2] !== undefined ? hodnoty[2] : '';
+            const cena = hodnoty[3] !== undefined ? hodnoty[3] : '';
+            const nazevProduktu = hodnoty[4] !== undefined ? hodnoty[4] : '';
+
+            tabulkaHTML += `
+                <tr>
+                    <td><span class="artikl-code">${artiklA}</span></td>
+                    <td><span class="artikl-code">${artiklB}</span></td>
+                    <td>${cenovaJednotka}</td>
+                    <td class="cena-text">${cena}</td>
+                    <td><strong>${nazevProduktu}</strong></td>
+                </tr>
+            `;
+        });
+
+        tabulkaHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        if (vysledky.length > 50) {
+            tabulkaHTML += `<div style="text-align: center; color: #6b7280; font-size: 13px; margin-top: 15px;">Zobrazeno prvních 50 výsledků z celkem ${vysledky.length}. Upřesněte vyhledávání.</div>`;
+        }
+
+        vystupSekce.innerHTML = tabulkaHTML;
+    }
+
+    function vycestejText(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Události na kliknutí a enter
+    document.getElementById('hledat-btn').addEventListener('click', provedVyhledavani);
+    document.getElementById('hledat').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            provedVyhledavani();
+        }
+    });
+
+    inicializujData();
+</script>
+
+</body>
+</html>
