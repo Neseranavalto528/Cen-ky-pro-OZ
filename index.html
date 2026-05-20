@@ -1,1 +1,173 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Produktů</title>
+    <style>
+        /* Moderní čistý design, příjemný na oči */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        /* Styl pro vyhledávací políčko */
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+        }
+        /* Stylování tabulky produktů */
+        .table-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background-color: #f1f3f5;
+            color: #495057;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .Cena {
+            font-weight: bold;
+            color: #2b8a3e;
+        }
+        #stav {
+            padding: 15px;
+            font-style: italic;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h1>Katalog Produktů</h1>
+    
+    <input type="text" id="hledat" class="search-box" placeholder="Hledat podle názvu nebo čísla artiklu...">
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Artikl (A)</th>
+                    <th>Artikl (B)</th>
+                    <th>Cenová jedn. (C)</th>
+                    <th>Cena (D)</th>
+                    <th>Název produktu (E)</th>
+                </tr>
+            </thead>
+            <tbody id="vystup-dat">
+                <tr>
+                    <td colspan="5" id="stav">Načítám data z katalogu...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Název tvého staženého souboru, ze kterého budeme číst
+    const SOUBOR_JSON = 'tableConvert.com_wur85z.json';
+    let vsechnaData = [];
+
+    async function nactiProdukty() {
+        try {
+            const odpoved = await fetch(SOUBOR_JSON);
+            if (!odpoved.ok) {
+                throw new Error(`Nelze načíst soubor ${SOUBOR_JSON}. Zkontroluj, zda je správně nahraný na GitHubu.`);
+            }
+            
+            vsechnaData = await odpoved.json();
+            
+            // Pokud se data úspěšně načtou, zobrazíme je
+            zobrazData(vsechnaData);
+
+        } catch (chyba) {
+            console.error(chyba);
+            document.getElementById('stav').innerText = "Chyba při načítání dat. Ujisti se, že se soubor jmenuje přesně: " + SOUBOR_JSON;
+        }
+    }
+
+    function zobrazData(data) {
+        const tbody = document.getElementById('vystup-dat');
+        tbody.innerHTML = ''; // Vyčistit tabulku
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nebyly nalezeny žádné produkty.</td></tr>';
+            return;
+        }
+
+        data.forEach(radek => {
+            // Získat hodnoty bez ohledu na to, jak se sloupce jmenují (podle jejich pozice)
+            const hodnoty = Object.values(radek);
+            
+            // Rozřazení podle tvého zadání (A, B, C, D, E)
+            const artiklA = hodnoty[0] !== undefined ? hodnoty[0] : '';
+            const artiklB = hodnoty[1] !== undefined ? hodnoty[1] : '';
+            const cenovaJednotka = hodnoty[2] !== undefined ? hodnoty[2] : '';
+            const cena = hodnoty[3] !== undefined ? hodnoty[3] : '';
+            const nazevProduktu = hodnoty[4] !== undefined ? hodnoty[4] : '';
+
+            // Vytvoření řádku tabulky
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${artiklA}</td>
+                <td>${artiklB}</td>
+                <td>${cenovaJednotka}</td>
+                <td class="Cena">${cena}</td>
+                <td><strong>${nazevProduktu}</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Funkce pro živé vyhledávání v tabulce
+    document.getElementById('hledat').addEventListener('input', function(e) {
+        const hledanyText = e.target.value.toLowerCase();
+        
+        const filtrovanaData = vsechnaData.filter(radek => {
+            const hodnoty = Object.values(radek).map(v => String(v).toLowerCase());
+            // Hledá shodu v jakémkoliv sloupci (název, artikl...)
+            return hodnoty.some(hodnota => hodnota.includes(hledanyText));
+        });
+        
+        zobrazData(filtrovanaData);
+    });
+
+    // Spuštění aplikace
+    nactiProdukty();
+</script>
+
+</body>
+</html>
