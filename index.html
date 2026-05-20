@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vyhledávač v Katalogu</title>
     <style>
-        /* Moderní, elegantní a čistý vzhled */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f3f4f6;
@@ -37,7 +36,6 @@
             margin-bottom: 25px;
             font-size: 15px;
         }
-        /* Vyhledávací sekce */
         .search-group {
             display: flex;
             gap: 10px;
@@ -70,7 +68,6 @@
         .search-btn:hover {
             background-color: #2563eb;
         }
-        /* Výsledky */
         .results-wrapper {
             background: white;
             border-radius: 16px;
@@ -128,18 +125,16 @@
 
 <div class="container">
     
-    <!-- Horní karta s vyhledáváním -->
     <div class="search-card">
         <h1>Interní Vyhledávač Produktů</h1>
-        <p class="subtitle">Zadejte název nebo číslo artiklu (klidně bez mezer) a stiskněte Hledat</p>
+        <p class="subtitle">Vyhledávání podle artiklu nebo názvu produktu</p>
         
         <div class="search-group">
-            <input type="text" id="hledat" class="search-box" placeholder="Hledat číslo nebo název..." autofocus>
+            <input type="text" id="hledat" class="search-box" placeholder="Zadejte kód artiklu nebo název..." autofocus>
             <button id="hledat-btn" class="search-btn">Hledat</button>
         </div>
     </div>
 
-    <!-- Tady se zobrazí buď tabulka, nebo textový stav -->
     <div id="vystup-sekce">
         <div class="info-msg" id="stav-text">Aplikace je připravena. Zadejte hledaný výraz výše.</div>
     </div>
@@ -151,7 +146,6 @@
     let vsechnaData = [];
     let nacteno = false;
 
-    // Skryté načtení dat při startu
     async function inicializujData() {
         try {
             const odpoved = await fetch(SOUBOR_JSON);
@@ -160,21 +154,21 @@
             nacteno = true;
             console.log("Data načtena do paměti.");
         } catch (chyba) {
-            document.getElementById('stav-text').innerText = "Chyba: Nepodařilo se na pozadí načíst datový soubor.";
+            document.getElementById('stav-text').innerText = "Chyba: Nepodařilo se načíst soubor " + SOUBOR_JSON;
             document.getElementById('stav-text').style.color = "#dc2626";
         }
     }
 
-    // Hlavní funkce pro vyhledávání
     function provedVyhledavani() {
         if (!nacteno) {
-            alert("Data se ještě načítají na pozadí, vteřinku strpení...");
+            alert("Data se ještě načítají, vteřinku strpení...");
             return;
         }
 
         const hledanyText = document.getElementById('hledat').value.trim().toLowerCase();
-        // Vytvoříme si verzi hledaného textu, která nemá vůbec žádné mezery
-        const hledanyTextBezMezer = hledanyText.replace(/\s+/g, '');
+        
+        // Odstraní ze zadaného vyhledávání úplně všechny běžné i speciální mezery (\s a \u00A0)
+        const hledanyTextBezMezer = hledanyText.replace(/[\s\u00A0]/g, '');
         
         const vystupSekce = document.getElementById('vystup-sekce');
 
@@ -183,39 +177,34 @@
             return;
         }
 
-        // CHYTRÉ FILTROVÁNÍ: Ignorujeme mezery v artiklech
+        // Filtrování: Hledáme shodu buď vyčištěného Sloupce A, nebo textu v názvu
         const vysledky = vsechnaData.filter(radek => {
             const hodnoty = Object.values(radek);
             
-            // Sloupec A (index 0) a Sloupec B (index 1) ošetříme proti mezerám
-            const artiklA_Cisty = hodnoty[0] !== undefined ? String(hodnoty[0]).toLowerCase().replace(/\s+/g, '') : '';
-            const artiklB_Cisty = hodnoty[1] !== undefined ? String(hodnoty[1]).toLowerCase().replace(/\s+/g, '') : '';
+            // Sloupec A (Artikl) - odstraníme z něj pro kontrolu úplně všechny druhy mezer
+            const artiklA_Puvodni = hodnoty[0] !== undefined ? String(hodnoty[0]) : '';
+            const artiklA_Cisty = artiklA_Puvodni.toLowerCase().replace(/[\s\u00A0]/g, '');
             
-            // Ostatní sloupce (Cena, Název produktu...) prohledáme klasicky s mezerami
+            // Sloupce C, D, E (Cenová jedn., Cena, Název) prohledáme klasicky s mezerami
             const ostatniSloupceText = hodnoty.slice(2).map(v => String(v).toLowerCase()).join(' ');
 
-            // Kontrola: Buď se text bez mezer shoduje s vyčištěným artiklem A nebo B, 
-            // nebo normální hledaný text sedí do názvu/ceny
-            return artiklA_Cisty.includes(hledanyTextBezMezer) || 
-                   artiklB_Cisty.includes(hledanyTextBezMezer) || 
-                   ostatniSloupceText.includes(hledanyText);
+            // Najde shodu, pokud čistý artikl obsahuje hledaný text bez mezer, nebo pokud text sedí do názvu
+            return artiklA_Cisty.includes(hledanyTextBezMezer) || ostatniSloupceText.includes(hledanyText);
         });
 
-        // Pokud nic nenajdeme
         if (vysledky.length === 0) {
-            vystupSekce.innerHTML = '<div class="info-msg" id="stav-text">Nebyly nalezeny žádné produkty odpovídající výrazu: "<strong>' + vycestejText(hledanyText) + '</strong>"</div>';
+            vystupSekce.innerHTML = '<div class="info-msg" id="stav-text">Nebyly nalezeny žádné produkty pro výraz: "<strong>' + vycestejText(hledanyText) + '</strong>"</div>';
             return;
         }
 
-        // Pokud najdeme, sestavíme tabulku (max 50 výsledků pro plynulost)
+        // Vykreslení tabulky (Sloupec B byl vynechán podle tvého přání)
         let tabulkaHTML = `
             <div class="results-wrapper" style="display: block;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Artikl A</th>
-                            <th>Artikl B</th>
-                            <th>Jedn.</th>
+                            <th>Artikl (Sloupec A)</th>
+                            <th>Cenová jedn.</th>
                             <th>Cena</th>
                             <th>Název produktu</th>
                         </tr>
@@ -229,7 +218,7 @@
             const hodnoty = Object.values(radek);
             
             const artiklA = hodnoty[0] !== undefined ? hodnoty[0] : '';
-            const artiklB = hodnoty[1] !== undefined ? hodnoty[1] : '';
+            // Hodnotu[1] (Sloupec B) záměrně přeskakujeme
             const cenovaJednotka = hodnoty[2] !== undefined ? hodnoty[2] : '';
             const cena = hodnoty[3] !== undefined ? hodnoty[3] : '';
             const nazevProduktu = hodnoty[4] !== undefined ? hodnoty[4] : '';
@@ -237,7 +226,6 @@
             tabulkaHTML += `
                 <tr>
                     <td><span class="artikl-code">${artiklA}</span></td>
-                    <td><span class="artikl-code">${artiklB}</span></td>
                     <td>${cenovaJednotka}</td>
                     <td class="cena-text">${cena}</td>
                     <td><strong>${nazevProduktu}</strong></td>
@@ -262,7 +250,6 @@
         return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // Události na kliknutí a enter
     document.getElementById('hledat-btn').addEventListener('click', provedVyhledavani);
     document.getElementById('hledat').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
