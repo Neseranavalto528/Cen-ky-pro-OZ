@@ -3,121 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vyhledávač v Katalogu</title>
+    <title>Interní Vyhledávač – Spojovací Materiál & Nářadí</title>
     <style>
+        /* Moderní industriální vzhled (Tmavě šedá + Bezpečnostní Oranžová/Žlutá) */
+        :root {
+            --primary-color: #1e293b; /* Tmavá břidlicová */
+            --accent-color: #f59e0b;  /* Industriální oranžovo-žlutá */
+            --bg-color: #f8fafc;      /* Světlé pozadí */
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
             margin: 0;
-            padding: 40px 20px;
+            padding: 20px 15px;
         }
+
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
         }
+
+        /* Horní vyhledávací panel */
         .search-card {
-            background: white;
-            padding: 30px;
+            background: var(--primary-color);
+            color: #ffffff;
+            padding: 30px 20px;
             border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             margin-bottom: 25px;
             text-align: center;
+            border-bottom: 4px solid var(--accent-color);
         }
-        h1 {
-            color: #111827;
-            font-size: 28px;
-            font-weight: 700;
-            margin-top: 0;
-            margin-bottom: 10px;
+
+        .search-card h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
         }
-        p.subtitle {
-            color: #6b7280;
-            margin-bottom: 25px;
-            font-size: 15px;
+
+        .search-card p.subtitle {
+            color: #94a3b8;
+            margin: 0 0 25px 0;
+            font-size: 14px;
         }
+
         .search-group {
             display: flex;
             gap: 10px;
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
         }
+
         .search-box {
             flex: 1;
-            padding: 14px 20px;
-            border: 2px solid #e5e7eb;
+            padding: 15px 20px;
+            border: 2px solid #334155;
             border-radius: 10px;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.2s;
+            background-color: #334155;
+            color: #ffffff;
+            transition: all 0.2s;
         }
+
         .search-box:focus {
-            border-color: #3b82f6;
+            border-color: var(--accent-color);
+            background-color: #475569;
         }
+
+        .search-box::placeholder {
+            color: #94a3b8;
+        }
+
         .search-btn {
-            background-color: #3b82f6;
-            color: white;
+            background-color: var(--accent-color);
+            color: var(--primary-color);
             border: none;
-            padding: 0 25px;
+            padding: 0 28px;
             border-radius: 10px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: background-color 0.2s;
+            text-transform: uppercase;
         }
+
         .search-btn:hover {
-            background-color: #2563eb;
+            background-color: #d97706;
         }
-        .results-wrapper {
-            background: white;
+
+        /* Výpis výsledků */
+        #vystup-sekce {
+            margin-top: 20px;
+        }
+
+        .info-msg {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 20px;
+            font-size: 15px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px dashed #cbd5e1;
+        }
+
+        /* --- MOBILNÍ ZOBRAZENÍ (KARTIČKY POD SEBOU) --- */
+        .mobile-cards-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .card-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 14px;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .artikl-badge {
+            font-family: monospace;
+            background-color: #f1f5f9;
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: var(--text-dark);
+            font-weight: bold;
+            font-size: 13px;
+            display: inline-block;
+            white-space: nowrap; /* Zabrání lámání artiklu */
+        }
+
+        .cena-badge {
+            font-weight: 800;
+            color: #16a34a;
+            font-size: 16px;
+        }
+
+        .nazev-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        /* --- TABLET / PC ZOBRAZENÍ (KLASICKÁ TABULKA) --- */
+        .desktop-table-wrapper {
+            display: none; /* Na mobilu skryto */
+            background: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            display: none;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
         }
+
         th, td {
-            padding: 14px 20px;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 15px;
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
         }
+
         th {
-            background-color: #f9fafb;
-            color: #4b5563;
-            font-weight: 600;
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.05em;
         }
+
         tr:last-child td {
             border-bottom: none;
         }
+
         tr:hover {
-            background-color: #f9fafb;
+            background-color: #f8fafc;
         }
-        .artikl-code {
-            font-family: monospace;
-            background-color: #f3f4f6;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #374151;
-        }
-        .cena-text {
-            font-weight: 700;
-            color: #059669;
-        }
-        .info-msg {
-            text-align: center;
-            color: #6b7280;
-            padding: 40px 20px;
-            font-size: 16px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+        /* --- MEDIÁLNÍ DOTAZY (Změna z mobilu na tablet/PC při šířce nad 768px) --- */
+        @media (min-width: 768px) {
+            body {
+                padding: 40px 20px;
+            }
+            .search-card h1 {
+                font-size: 32px;
+            }
+            /* Skryjeme mobilní kartičky a ukážeme čistou tabulku */
+            .mobile-cards-container {
+                display: none;
+            }
+            .desktop-table-wrapper {
+                display: block;
+            }
         }
     </style>
 </head>
@@ -126,17 +249,17 @@
 <div class="container">
     
     <div class="search-card">
-        <h1>Interní Vyhledávač Produktů</h1>
-        <p class="subtitle">Vyhledávání podle artiklu nebo názvu produktu</p>
+        <h1>Katalog Materiálu & Nářadí</h1>
+        <p class="subtitle">Zadejte kód artiklu nebo název (vrtáky, kotouče, šrouby...)</p>
         
         <div class="search-group">
-            <input type="text" id="hledat" class="search-box" placeholder="Zadejte kód artiklu nebo název..." autofocus>
+            <input type="text" id="hledat" class="search-box" placeholder="Hledat artikl nebo název produktu..." autofocus>
             <button id="hledat-btn" class="search-btn">Hledat</button>
         </div>
     </div>
 
     <div id="vystup-sekce">
-        <div class="info-msg" id="stav-text">Aplikace je připravena. Zadejte hledaný výraz výše.</div>
+        <div class="info-msg" id="stav-text">Systém je připraven. Zadejte hledaný výraz výše.</div>
     </div>
 
 </div>
@@ -146,64 +269,69 @@
     let vsechnaData = [];
     let nacteno = false;
 
+    // Skryté načtení dat při startu webu
     async function inicializujData() {
         try {
             const odpoved = await fetch(SOUBOR_JSON);
             if (!odpoved.ok) throw new Error();
             vsechnaData = await odpoved.json();
             nacteno = true;
-            console.log("Data načtena do paměti.");
+            console.log("Data skladu úspěšně připravena.");
         } catch (chyba) {
-            document.getElementById('stav-text').innerText = "Chyba: Nepodařilo se načíst soubor " + SOUBOR_JSON;
-            document.getElementById('stav-text').style.color = "#dc2626";
+            document.getElementById('stav-text').innerText = "Chyba: Nepodařilo se načíst datový soubor " + SOUBOR_JSON;
+            document.getElementById('stav-text').style.color = "#ef4444";
         }
     }
 
+    // Vyhledávací logika
     function provedVyhledavani() {
         if (!nacteno) {
-            alert("Data se ještě načítají, vteřinku strpení...");
+            alert("Data se stále načítají, moment...");
             return;
         }
 
-        const hledanyText = document.getElementById('hledat').value.trim().toLowerCase();
+        const hledatInput = document.getElementById('hledat');
+        const hledanyText = hledatInput.value.trim().toLowerCase();
         
-        // Odstraní ze zadaného vyhledávání úplně všechny běžné i speciální mezery (\s a \u00A0)
+        // Odstranění běžných i skrytých mezer pro přesné párování artiklů
         const hledanyTextBezMezer = hledanyText.replace(/[\s\u00A0]/g, '');
-        
         const vystupSekce = document.getElementById('vystup-sekce');
 
         if (hledanyText === '') {
-            vystupSekce.innerHTML = '<div class="info-msg" id="stav-text">Do vyhledávacího pole jste nic nenapsal.</div>';
+            vystupSekce.innerHTML = '<div class="info-msg">Zadejte do vyhledávače číslo artiklu nebo název materiálu.</div>';
             return;
         }
 
-        // Filtrování: Hledáme shodu buď vyčištěného Sloupce A, nebo textu v názvu
+        // Filtrování dat (Sloupec A bez mezer, ostatní sloupce s mezerami)
         const vysledky = vsechnaData.filter(radek => {
             const hodnoty = Object.values(radek);
-            
-            // Sloupec A (Artikl) - odstraníme z něj pro kontrolu úplně všechny druhy mezer
             const artiklA_Puvodni = hodnoty[0] !== undefined ? String(hodnoty[0]) : '';
             const artiklA_Cisty = artiklA_Puvodni.toLowerCase().replace(/[\s\u00A0]/g, '');
             
-            // Sloupce C, D, E (Cenová jedn., Cena, Název) prohledáme klasicky s mezerami
             const ostatniSloupceText = hodnoty.slice(2).map(v => String(v).toLowerCase()).join(' ');
 
-            // Najde shodu, pokud čistý artikl obsahuje hledaný text bez mezer, nebo pokud text sedí do názvu
             return artiklA_Cisty.includes(hledanyTextBezMezer) || ostatniSloupceText.includes(hledanyText);
         });
 
+        // Pokud nic nenajdeme
         if (vysledky.length === 0) {
-            vystupSekce.innerHTML = '<div class="info-msg" id="stav-text">Nebyly nalezeny žádné produkty pro výraz: "<strong>' + vycestejText(hledanyText) + '</strong>"</div>';
+            vystupSekce.innerHTML = '<div class="info-msg">Nebylo nalezeno žádné zboží odpovídající výrazu: "<strong>' + vycestejText(hledanyText) + '</strong>"</div>';
             return;
         }
 
-        // Vykreslení tabulky (Sloupec B byl vynechán podle tvého přání)
-        let tabulkaHTML = `
-            <div class="results-wrapper" style="display: block;">
+        // Omezíme výsledky na 50, aby se telefon nezasekal
+        const limitVysledku = vysledky.slice(0, 50);
+
+        // 1. GENEROVÁNÍ PRO MOBILY (KARTIČKY POD SEBOU)
+        let mobilniHTML = '<div class="mobile-cards-container">';
+        
+        // 2. GENEROVÁNÍ PRO PC/TABLETY (ŠIROKÁ TABULKA)
+        let desktopHTML = `
+            <div class="desktop-table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>Artikl (Sloupec A)</th>
+                            <th>Artikl</th>
                             <th>Cenová jedn.</th>
                             <th>Cena</th>
                             <th>Název produktu</th>
@@ -212,44 +340,69 @@
                     <tbody>
         `;
 
-        const limitVysledku = vysledky.slice(0, 50);
-        
+        // Sestavení obou zobrazení najednou
         limitVysledku.forEach(radek => {
             const hodnoty = Object.values(radek);
             
             const artiklA = hodnoty[0] !== undefined ? hodnoty[0] : '';
-            // Hodnotu[1] (Sloupec B) záměrně přeskakujeme
             const cenovaJednotka = hodnoty[2] !== undefined ? hodnoty[2] : '';
             const cena = hodnoty[3] !== undefined ? hodnoty[3] : '';
             const nazevProduktu = hodnoty[4] !== undefined ? hodnoty[4] : '';
 
-            tabulkaHTML += `
+            // Přidáme kartu pro mobil
+            mobilniHTML += `
+                <div class="product-card">
+                    <div class="card-row">
+                        <span class="card-label">Artikl</span>
+                        <span class="card-value"><span class="artikl-badge">${artiklA}</span></span>
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">Cenová jedn.</span>
+                        <span class="card-value">${cenovaJednotka}</span>
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">Cena</span>
+                        <span class="card-value"><span class="cena-badge">${cena}</span></span>
+                    </div>
+                    <div style="margin-top: 10px; padding-top: 5px;">
+                        <span class="card-label" style="display:block; margin-bottom: 4px;">Název produktu</span>
+                        <div class="nazev-text">${nazevProduktu}</div>
+                    </div>
+                </div>
+            `;
+
+            // Přidáme řádek pro stolní PC / tablet
+            desktopHTML += `
                 <tr>
-                    <td><span class="artikl-code">${artiklA}</span></td>
+                    <td><span class="artikl-badge">${artiklA}</span></td>
                     <td>${cenovaJednotka}</td>
-                    <td class="cena-text">${cena}</td>
-                    <td><strong>${nazevProduktu}</strong></td>
+                    <td><span class="cena-badge">${cena}</span></td>
+                    <td class="nazev-text">${nazevProduktu}</td>
                 </tr>
             `;
         });
 
-        tabulkaHTML += `
-                    </tbody>
-                </table>
-            </div>
-        `;
+        mobilniHTML += '</div>';
+        desktopHTML += '</tbody></table></div>';
+
+        // Spojíme obě zobrazení do výsledku. CSS styl se sám postará o to, které se skryje a které ukáže.
+        let finalniHTML = mobilniHTML + desktopHTML;
 
         if (vysledky.length > 50) {
-            tabulkaHTML += `<div style="text-align: center; color: #6b7280; font-size: 13px; margin-top: 15px;">Zobrazeno prvních 50 výsledků z celkem ${vysledky.length}. Upřesněte vyhledávání.</div>`;
+            finalniHTML += `<div style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px; font-weight: 500;">Zobrazeno prvních 50 položek z celkem ${vysledky.length}.</div>`;
         }
 
-        vystupSekce.innerHTML = tabulkaHTML;
+        vystupSekce.innerHTML = finalniHTML;
+        
+        // Schová klávesnici na mobilních zařízeních po stisknutí Hledat/Enter
+        hledatInput.blur();
     }
 
     function vycestejText(text) {
         return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
+    // Eventy
     document.getElementById('hledat-btn').addEventListener('click', provedVyhledavani);
     document.getElementById('hledat').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
