@@ -171,7 +171,7 @@
             font-weight: bold;
             font-size: 13px;
             display: inline-block;
-            white-space: nowrap; /* Zabrání lámání artiklu */
+            white-space: nowrap;
         }
 
         .cena-badge {
@@ -190,7 +190,7 @@
 
         /* --- TABLET / PC ZOBRAZENÍ (KLASICKÁ TABULKA) --- */
         .desktop-table-wrapper {
-            display: none; /* Na mobilu skryto */
+            display: none;
             background: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -226,7 +226,6 @@
             background-color: #f8fafc;
         }
 
-        /* --- MEDIÁLNÍ DOTAZY (Změna z mobilu na tablet/PC při šířce nad 768px) --- */
         @media (min-width: 768px) {
             body {
                 padding: 40px 20px;
@@ -234,7 +233,6 @@
             .search-card h1 {
                 font-size: 32px;
             }
-            /* Skryjeme mobilní kartičky a ukážeme čistou tabulku */
             .mobile-cards-container {
                 display: none;
             }
@@ -250,10 +248,16 @@
     
     <div class="search-card">
         <h1>Katalog Materiálu & Nářadí</h1>
-        <p class="subtitle">Zadejte kód artiklu nebo název (vrtáky, kotouče, šrouby...)</p>
+        <p class="subtitle">Zadejte kód artiklu na číselníku</p>
         
         <div class="search-group">
-            <input type="text" id="hledat" class="search-box" placeholder="Hledat artikl nebo název produktu..." autofocus>
+            <input type="text" 
+                   inputmode="numeric" 
+                   pattern="[0-9]*" 
+                   id="hledat" 
+                   class="search-box" 
+                   placeholder="Zadejte kód artiklu..." 
+                   autofocus>
             <button id="hledat-btn" class="search-btn">Hledat</button>
         </div>
     </div>
@@ -269,7 +273,6 @@
     let vsechnaData = [];
     let nacteno = false;
 
-    // Skryté načtení dat při startu webu
     async function inicializujData() {
         try {
             const odpoved = await fetch(SOUBOR_JSON);
@@ -283,7 +286,6 @@
         }
     }
 
-    // Vyhledávací logika
     function provedVyhledavani() {
         if (!nacteno) {
             alert("Data se stále načítají, moment...");
@@ -293,16 +295,14 @@
         const hledatInput = document.getElementById('hledat');
         const hledanyText = hledatInput.value.trim().toLowerCase();
         
-        // Odstranění běžných i skrytých mezer pro přesné párování artiklů
         const hledanyTextBezMezer = hledanyText.replace(/[\s\u00A0]/g, '');
         const vystupSekce = document.getElementById('vystup-sekce');
 
         if (hledanyText === '') {
-            vystupSekce.innerHTML = '<div class="info-msg">Zadejte do vyhledávače číslo artiklu nebo název materiálu.</div>';
+            vystupSekce.innerHTML = '<div class="info-msg">Zadejte do vyhledávače číslo artiklu.</div>';
             return;
         }
 
-        // Filtrování dat (Sloupec A bez mezer, ostatní sloupce s mezerami)
         const vysledky = vsechnaData.filter(radek => {
             const hodnoty = Object.values(radek);
             const artiklA_Puvodni = hodnoty[0] !== undefined ? String(hodnoty[0]) : '';
@@ -313,19 +313,14 @@
             return artiklA_Cisty.includes(hledanyTextBezMezer) || ostatniSloupceText.includes(hledanyText);
         });
 
-        // Pokud nic nenajdeme
         if (vysledky.length === 0) {
             vystupSekce.innerHTML = '<div class="info-msg">Nebylo nalezeno žádné zboží odpovídající výrazu: "<strong>' + vycestejText(hledanyText) + '</strong>"</div>';
             return;
         }
 
-        // Omezíme výsledky na 50, aby se telefon nezasekal
         const limitVysledku = vysledky.slice(0, 50);
 
-        // 1. GENEROVÁNÍ PRO MOBILY (KARTIČKY POD SEBOU)
         let mobilniHTML = '<div class="mobile-cards-container">';
-        
-        // 2. GENEROVÁNÍ PRO PC/TABLETY (ŠIROKÁ TABULKA)
         let desktopHTML = `
             <div class="desktop-table-wrapper">
                 <table>
@@ -340,7 +335,6 @@
                     <tbody>
         `;
 
-        // Sestavení obou zobrazení najednou
         limitVysledku.forEach(radek => {
             const hodnoty = Object.values(radek);
             
@@ -349,7 +343,6 @@
             const cena = hodnoty[3] !== undefined ? hodnoty[3] : '';
             const nazevProduktu = hodnoty[4] !== undefined ? hodnoty[4] : '';
 
-            // Přidáme kartu pro mobil
             mobilniHTML += `
                 <div class="product-card">
                     <div class="card-row">
@@ -371,7 +364,6 @@
                 </div>
             `;
 
-            // Přidáme řádek pro stolní PC / tablet
             desktopHTML += `
                 <tr>
                     <td><span class="artikl-badge">${artiklA}</span></td>
@@ -385,7 +377,6 @@
         mobilniHTML += '</div>';
         desktopHTML += '</tbody></table></div>';
 
-        // Spojíme obě zobrazení do výsledku. CSS styl se sám postará o to, které se skryje a které ukáže.
         let finalniHTML = mobilniHTML + desktopHTML;
 
         if (vysledky.length > 50) {
@@ -393,8 +384,6 @@
         }
 
         vystupSekce.innerHTML = finalniHTML;
-        
-        // Schová klávesnici na mobilních zařízeních po stisknutí Hledat/Enter
         hledatInput.blur();
     }
 
@@ -402,7 +391,6 @@
         return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // Eventy
     document.getElementById('hledat-btn').addEventListener('click', provedVyhledavani);
     document.getElementById('hledat').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
